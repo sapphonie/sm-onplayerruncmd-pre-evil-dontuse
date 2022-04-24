@@ -51,11 +51,13 @@ public MRESReturn Detour_PlayerRunCmd(int pThis, DHookParam hParams)
     angles[1]           =                        dref( ucmd_ptr+view_as<Address>( 0x10 ) );
     angles[2]           =                        dref( ucmd_ptr+view_as<Address>( 0x14 ) );
     int buttons         =                        dref( ucmd_ptr+view_as<Address>( 0x24 ) );
+    // this is a byte
     int impulse         =              sign_ext( dref( ucmd_ptr+view_as<Address>( 0x28 ), NumberType_Int8));
     Address weaponidx   =                        dref( ucmd_ptr+view_as<Address>( 0x2c ) );
     Address subtype     =                        dref( ucmd_ptr+view_as<Address>( 0x30 ) );
     int randomseed      =                        dref( ucmd_ptr+view_as<Address>( 0x34 ) );
     Address server_seed =                        dref( ucmd_ptr+view_as<Address>( 0x38 ) );
+    // these are unsigned shorts
     int mousex          = unsigned_short_to_int( dref( ucmd_ptr+view_as<Address>( 0x3C ), NumberType_Int16));
     int mousey          = unsigned_short_to_int( dref( ucmd_ptr+view_as<Address>( 0x3E ), NumberType_Int16));
 
