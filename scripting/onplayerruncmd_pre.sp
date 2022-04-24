@@ -44,22 +44,23 @@ public void OnPluginStart()
 public MRESReturn Detour_PlayerRunCmd(int pThis, DHookParam hParams)
 {
     Address ucmd_ptr    = DHookGetParamAddress(hParams, 1);
+
     float angles[3];
-    int cmdnum          =                        dref( ucmd_ptr+view_as<Address>( 0x04 ) );
-    int tickcount       =                        dref( ucmd_ptr+view_as<Address>( 0x08 ) );
-    angles[0]           =                        dref( ucmd_ptr+view_as<Address>( 0x0c ) );
-    angles[1]           =                        dref( ucmd_ptr+view_as<Address>( 0x10 ) );
-    angles[2]           =                        dref( ucmd_ptr+view_as<Address>( 0x14 ) );
-    int buttons         =                        dref( ucmd_ptr+view_as<Address>( 0x24 ) );
-    // this is a byte
-    int impulse         =              sign_ext( dref( ucmd_ptr+view_as<Address>( 0x28 ), NumberType_Int8));
-    Address weaponidx   =                        dref( ucmd_ptr+view_as<Address>( 0x2c ) );
-    Address subtype     =                        dref( ucmd_ptr+view_as<Address>( 0x30 ) );
-    int randomseed      =                        dref( ucmd_ptr+view_as<Address>( 0x34 ) );
-    Address server_seed =                        dref( ucmd_ptr+view_as<Address>( 0x38 ) );
+
+    int cmdnum          = DHookGetParamObjectPtrVar( hParams, 1, 0x04, ObjectValueType_Int );                   // 0x04
+    int tickcount       = DHookGetParamObjectPtrVar( hParams, 1, 0x08, ObjectValueType_Int );                   // 0x08
+    // angles (float vector)
+    DHookGetParamObjectPtrVarVector( hParams, 1, 0x0c, ObjectValueType_Vector, angles );                        // 0x0c,0x10,0x14
+    int buttons         = DHookGetParamObjectPtrVar( hParams, 1, 0x24, ObjectValueType_Int );                   // 0x24
+    // this is a byte               
+    int impulse         = sign_ext( dref( ucmd_ptr+view_as<Address>( 0x28 ), NumberType_Int8 ) );               // 0x28
+    int weaponidx       = DHookGetParamObjectPtrVar( hParams, 1, 0x2c, ObjectValueType_Int );                   // 0x2c
+    int subtype         = DHookGetParamObjectPtrVar( hParams, 1, 0x30, ObjectValueType_Int );                   // 0x30
+    int randomseed      = DHookGetParamObjectPtrVar( hParams, 1, 0x34, ObjectValueType_Int );                   // 0x34
+    float server_seed   = DHookGetParamObjectPtrVar( hParams, 1, 0x38, ObjectValueType_Float );                 // 0x38
     // these are unsigned shorts
-    int mousex          = unsigned_short_to_int( dref( ucmd_ptr+view_as<Address>( 0x3C ), NumberType_Int16));
-    int mousey          = unsigned_short_to_int( dref( ucmd_ptr+view_as<Address>( 0x3E ), NumberType_Int16));
+    int mousex          = unsigned_short_to_int( dref( ucmd_ptr+view_as<Address>( 0x3c ), NumberType_Int16 ) ); // 0x3c
+    int mousey          = unsigned_short_to_int( dref( ucmd_ptr+view_as<Address>( 0x3e ), NumberType_Int16 ) ); // 0x3e
 
     PrintToServer("\
         cmdnum      %i\n\
@@ -92,11 +93,19 @@ public MRESReturn Detour_PlayerRunCmd(int pThis, DHookParam hParams)
     return MRES_Ignored;
 }
 
+public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
+{
+    buttons = 0;
+    PrintToServer("OPRC buttons %i \n", buttons);
+    return Plugin_Changed;
+}
+
 any dref(any ptr, NumberType size = NumberType_Int32)
 {
     return view_as<any>(LoadFromAddress(ptr, size));
 }
 
+// Thanks Peak#1337
 int unsigned_short_to_int(int uShort)
 {
     return (uShort | ((uShort & 0x00008000) ? 0xFFFF0000 : 0x00000000));
@@ -105,12 +114,4 @@ int unsigned_short_to_int(int uShort)
 int sign_ext(int byte)
 {
     return (byte | ((byte & 0x00000080) ? 0xFFFFFF00 : 0x00000000));
-}
-
-
-public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
-{
-    buttons = 0;
-    PrintToServer("OPRC buttons %i", buttons);
-    return Plugin_Changed;
 }
